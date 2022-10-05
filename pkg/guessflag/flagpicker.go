@@ -2,7 +2,6 @@ package guessflag
 
 import (
 	"bytes"
-	"fmt"
 	ct "geoterm/internal/country"
 	"geoterm/internal/database"
 	"math/rand"
@@ -14,9 +13,9 @@ import (
 var countries []ct.Country
 var country ct.Country
 
-func Init() {
+func InitFlagSystem() {
 	rand.Seed(time.Now().UnixNano())
-	countries = database.GetAllCountries()
+	countries = database.GetAllIndependentCountries()
 	index := rand.Intn(len(countries))
 	country = removeCountry(index)
 }
@@ -31,7 +30,6 @@ func GetCurrentCountry() ct.Country {
 }
 
 func ShowFlag() {
-	fmt.Println(country.Translations)
 	cmd := exec.Command("chafa", "-C", "on", "-s", "60x20")
 	cmd.Stdin = bytes.NewReader(country.Flag)
 	cmd.Stdout = os.Stdout

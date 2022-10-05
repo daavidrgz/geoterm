@@ -8,5 +8,5 @@ import (
 func JsonToCountries(jsonBytes []byte) []ct.Country {
 	var countries []ct.JsonCountry
 	json.Unmarshal(jsonBytes, &countries)
-	return ct.JsonCountryListToJson(countries)
+	return ct.JsonCountryListToCountry(countries)
 }

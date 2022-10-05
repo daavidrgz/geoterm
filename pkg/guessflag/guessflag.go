@@ -42,7 +42,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
-			NextCountry()
 			return m, tea.Batch(tea.Quit)
 		case tea.KeyCtrlC, tea.KeyEsc:
 			*m.exit = true
@@ -63,7 +62,7 @@ func (m model) View() string {
 }
 
 func LaunchGame() {
-	Init()
+	InitFlagSystem()
 
 	for len(countries) > 0 {
 		fmt.Printf("\x1b[?25l")
@@ -87,6 +86,7 @@ func LaunchGame() {
 
 		if ct.MatchesName(GetCurrentCountry(), model.textInput.Value()) {
 			fmt.Println("Correct!")
+			NextCountry()
 		} else {
 			os.Exit(1)
 			fmt.Println("Incorrect!")
