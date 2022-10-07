@@ -5,17 +5,30 @@ import (
 	"os/exec"
 
 	"fmt"
-	"log"
 
 	ct "geoterm/internal/country"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
 	textInput *textinput.Model
-	exit      *bool
+	Incorrect bool
+}
+
+func restoreDefaultModel() {
+	m.textInput.TextStyle = lipgloss.NewStyle().Foreground(Foreground)
+	m.textInput.PromptStyle = lipgloss.NewStyle().Foreground(Foreground)
+	m.textInput.SetValue("")
+	m.Incorrect = false
+}
+
+func setIncorrectModel() {
+	m.textInput.TextStyle = lipgloss.NewStyle().Background(Red)
+	m.textInput.PromptStyle = lipgloss.NewStyle().Foreground(Red)
+	m.Incorrect = true
 }
 
 func initialModel() model {
@@ -24,11 +37,9 @@ func initialModel() model {
 	ti.Focus()
 	ti.CharLimit = 156
 	ti.Width = 20
+	ti.TextStyle = lipgloss.NewStyle().Foreground(Foreground)
 
-	return model{
-		textInput: &ti,
-		exit:      new(bool),
-	}
+	return model{textInput: &ti, Incorrect: false}
 }
 
 func (m model) Init() tea.Cmd {
@@ -42,10 +53,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
-			return m, tea.Batch(tea.Quit)
+			return m, tea.Quit
 		case tea.KeyCtrlC, tea.KeyEsc:
-			*m.exit = true
-			return m, tea.Batch(tea.Quit)
+			os.Exit(0)
 		}
 	}
 
@@ -57,39 +67,48 @@ func (m model) View() string {
 	return fmt.Sprintf(
 		"%s\n\n%s",
 		m.textInput.View(),
-		"Press q to quit",
+		"Press Esc to quit",
 	)
 }
 
+var incorrect = 0
+var correct = 0
+var m = initialModel()
+
 func LaunchGame() {
-	InitFlagSystem()
+	totalCountries := InitFlagSystem()
 
 	for len(countries) > 0 {
-		fmt.Printf("\x1b[?25l")
-		cmd := exec.Command("clear")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
-		fmt.Printf("\x1b[?25l")
+		hideCursor()
+		clearScreen()
 
+		RenderTitle()
+		RenderCounter(correct, incorrect, totalCountries)
 		ShowFlag()
 
-		model := initialModel()
+		tea.NewProgram(m).Start()
 
-		p := tea.NewProgram(model)
-		if err := p.Start(); err != nil {
-			log.Fatal(err)
-		}
-
-		if *model.exit {
-			break
-		}
-
-		if ct.MatchesName(GetCurrentCountry(), model.textInput.Value()) {
-			fmt.Println("Correct!")
+		if ct.MatchesName(GetCurrentCountry(), m.textInput.Value()) {
+			if !m.Incorrect {
+				correct++
+			}
+			restoreDefaultModel()
 			NextCountry()
 		} else {
-			os.Exit(1)
-			fmt.Println("Incorrect!")
+			if !m.Incorrect {
+				incorrect++
+				setIncorrectModel()
+			}
 		}
 	}
+}
+
+func hideCursor() {
+	fmt.Printf("\x1b[?25l")
+}
+
+func clearScreen() {
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }

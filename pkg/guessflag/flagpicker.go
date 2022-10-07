@@ -13,11 +13,13 @@ import (
 var countries []ct.Country
 var country ct.Country
 
-func InitFlagSystem() {
+func InitFlagSystem() int {
 	rand.Seed(time.Now().UnixNano())
 	countries = database.GetAllIndependentCountries()
 	index := rand.Intn(len(countries))
 	country = removeCountry(index)
+
+	return len(countries)
 }
 
 func NextCountry() {

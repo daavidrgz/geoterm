@@ -1,7 +1,6 @@
 package country
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -12,7 +11,7 @@ type Translation struct {
 
 type Country struct {
 	Code         string
-	Independent	bool
+	Independent  bool
 	Region       string
 	Subregion    string
 	Population   int
@@ -24,14 +23,16 @@ type Country struct {
 }
 
 func MatchesName(country Country, guess string) bool {
-	fmt.Println("Comparing " + country.CommonName + " with " + guess)
 	for _, translation := range country.Translations {
 		if compareName(translation.Translation, guess) {
 			return true
 		}
-		fmt.Println(guess + " does not match with " + normalize(translation.Translation))
 	}
 	return compareName(country.CommonName, guess)
+}
+
+func MatchesCapital(country Country, guess string) bool {
+	return compareName(country.Capital, guess)
 }
 
 func compareName(a, b string) bool {
@@ -59,8 +60,4 @@ func normalize(text string) string {
 	}
 
 	return strings.ToLower(text)
-}
-
-func MatchesCapital(country Country, capitalName string) bool {
-	return country.Capital == strings.ToLower(capitalName)
 }
