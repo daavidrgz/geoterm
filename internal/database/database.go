@@ -20,7 +20,7 @@ func Init() {
 	if err != nil {
 		log.Fatal("Error while getting home directory")
 	}
-	databasePath = filepath.Join(homeDir, ".cache/geoterm/countries.db")
+	databasePath = filepath.Join(homeDir, ".geoterm/countries.db")
 
 	openDatabase()
 }
